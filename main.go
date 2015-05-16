@@ -31,8 +31,8 @@ var (
 	regexQualityMatch = regexp.MustCompile("VIDEO=\".*\"")
 	qualities         = []string{"best", "high", "medium", "low", "mobile"}
 
-	strStarting           = "[INFO] Acquiring %s stream data from Twitch Servers\n\n"
-	strOpeningVLC         = "[INFO] Opening %s stream in VLC and exiting app\n"
+	strStarting           = "[INFO] Acquiring %s stream data from Twitch Servers\n"
+	strOpeningVLC         = "[INFO] Opening %s stream in VLC\n"
 	strNoSelectedQuality  = "[INFO] No streams available at %s quality, choosing the best one instead\n"
 	strStreamURL          = "[URL] %s\n"
 	strBadQualitySelected = "[ERROR] bad quality selected\n\n%s"

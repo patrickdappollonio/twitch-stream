@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"syscall"
+	"os/exec"
 )
 
 func openInVLC(stream url.URL) error {
@@ -13,9 +13,7 @@ func openInVLC(stream url.URL) error {
 		return fmt.Errorf("VideoLAN app not found at %s", path)
 	}
 
-	argv := []string{"vlc", stream.String()}
-
-	if _, err := syscall.ForkExec(path, argv, nil); err != nil {
+	if err := exec.Command(path, stream.String()).Run(); err != nil {
 		return err
 	}
 
