@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 var (
 	vlc_path_64 = `C:\Program Files (x86)\VideoLAN\VLC\VLC.exe`
 	vlc_path_32 = `C:\Program Files\VideoLAN\VLC\VLC.exe`
@@ -17,8 +19,8 @@ func getVLCPath() (string, error) {
 	}
 
 	if path == "" {
-		return "", false
+		return "", fmt.Errorf("vlc executable not found!")
 	}
 
-	return path, true
+	return path, nil
 }
