@@ -26,7 +26,11 @@ Another thing that could be important for you is that `livestreamer` is only ava
 
 Finally, if you have Mac OS X or Linux, you'll see that [there are quite a good number of requirements](http://docs.livestreamer.io/install.html#dependencies), all automatically installed by the installer, and the installation is done through `pip`, one of the Python Package managers out there. `twitch-stream` only has ONE file and one file alone: the executable. You don't need anything else, you don't need Go installed or not even Python. No dependencies at all!
 
-## Adding the app to the Operating System Path
+## Internals / Geeky stuff
+
+The app is written in Go —that's what you see above, those files ending in `.go`— because it's fun and allows the same application to run on both Windows and Macintosh without changing a line of code.
+
+#### Adding the app to the Operating System Path
 
 If you want to run the app without prepending the full folder path before, then you need to add the app to your **path** set up on your computer. The **path** its just a list of folders where, if an executable is found, then doesn't need to be called with the full path on it, instead, you can just use the executable name (in our case, `twitch-stream`).
 
@@ -34,14 +38,10 @@ If you want to run the app without prepending the full folder path before, then 
 
 **On Macintosh and Linux**, you probably already figured that out. But if you don't, simply copy the executable to `/usr/local/bin`, by writing `cp twitch-stream /usr/local/bin`. Then simply execute the app like any other command line app. Alternatively you can run the app by dragging-and-dropping the executable to the Terminal Window with the needed parameters too.
 
-## Internals
-
-The app is written in Go —that's what you see above, those files ending in `.go`— because it's fun and allows the same application to run on both Windows and Macintosh without changing a line of code.
-
-### Do you accept Pull Requests?
+#### Do you accept Pull Requests?
 
 Absolutely! If you think you can make something better, I'll be glad to accept any pull request. Just send them out!
 
-### Bug reports / Suggestions / Improvements?
+#### Bug reports / Suggestions / Improvements?
 
 Please, open an issue at the [Issue Tracker](https://github.com/patrickdappollonio/twitch-stream/issues). I'll try to do my best to solve any kind of problem you might encounter. If it's a suggestion or improvement, then be my guest and file an issue there as well. Any suggestions are always welcome.
