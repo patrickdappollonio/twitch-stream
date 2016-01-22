@@ -5,7 +5,7 @@ Hello there! `twitch-stream` is an app to retrieve Twitch's `m3u8` streaming URL
 
 ### Download
 
-You can **always download the latest app available** for both Macintosh and Windows by going to the **[Releases page](https://github.com/patrickdappollonio/twitch-stream/releases)**. There you'll find always the latest version available.
+You can **always download the latest version** for Windows, Macintosh and Linux by going to the **[Releases page](https://github.com/patrickdappollonio/twitch-stream/releases)**. For easy and convenience, I offer a Windows Installer so you don't need to worry about where to place the application.
 
 ### Usage
 
