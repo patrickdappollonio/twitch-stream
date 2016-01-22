@@ -1,4 +1,4 @@
-# `twitch-stream`, watch your favorite streams in VLC
+# twitch-stream, watch your favorite streams in VLC
 
 Hello there! `twitch-stream` is a lightweight alternative to `livestreamer`, to watch your favorite Twitch's live streams on VLC, on Windows, Mac and Linux. This is always useful since Twitch's Player currently works by wrapping the stream with a flash-player one. Flash is well known to be a battery-hungry application and it will definitely make your battery unhappy if you're watching streams on the run. Also, `twitch-streams` can be used in conjunction with Chatty: you can chat and watch streams at the same time. Great!
 
