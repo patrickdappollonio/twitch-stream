@@ -132,7 +132,9 @@ func GetStreamWithQualityOrBest(channel, token, signature, quality string) (Stre
 	return stream, nil
 }
 
-// GetAllStreams retrieves all available stream URLs with the given quality
+// GetAllStreams retrieves all available stream URLs with their given quality.
+// For Twitch Partners, they'll have 5 different qualities: source, high, medium,
+// low, and mobile. While for the rest, the only available quality is source.
 func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 	// Check that channel is not empty
 	if strings.TrimSpace(channel) == "" {
