@@ -12,10 +12,10 @@ You can **always download the latest app available** for both Macintosh and Wind
 Open your command line app —on Windows, it's called "Command Prompt" while in Macintosh it's called "Terminal"—, then drag the recently downloaded executable and drop it on the command line. That will show the full path to the executable as text in the command line. After that, just add the corresponding extra parameters, like the Twitch Streamer Username you want to see (here we're going to use `patrickdappollonio`) and the stream quality (here we're going to use `best`), like this:
 
 ```
-twitch-stream patrickdappollonio best
+twitch-stream patrickdappollonio [quality]
 ```
 
-That will open the stream with the selected quality (or the best found if none match the requested quality) available for the user `patrickdappollonio` in the VLC app.
+That will open the stream with the selected quality (or the "best" found if none match the requested quality) available for the user `patrickdappollonio` in the VLC app.
 
 If you're using Macintosh and you can't run the app, you might have to give it the proper permissions by writing `chmod +x twitch-stream` at the folder where you downloaded the executable.
 
