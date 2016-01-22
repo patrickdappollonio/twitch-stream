@@ -111,7 +111,7 @@ func main() {
 	}
 
 	// Try finding the vlc executable
-	path, err := exec.LookPath(VLC_APP)
+	path, err := getVLCPath()
 
 	// If the app wasn't found, print a message
 	if err != nil {
