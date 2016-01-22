@@ -21,7 +21,7 @@ http://www.twitch.tv/patrickdappollonio on Twitch. Follow me!`
 	LOG_TAG    = "[info] -- %s \n"
 	ERROR_TAG  = "[error] -- %s \n"
 	VLC_APP    = "vlc"
-	THANKS_MSG = "———— Thanks for using twitch-stream! ————"
+	THANKS_MSG = "—————— Thanks for using twitch-stream! ——————"
 )
 
 var (
