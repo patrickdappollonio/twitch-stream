@@ -18,6 +18,14 @@ That will open my stream —if I'm streaming— with the selected quality (or th
 
 If you're using Macintosh and you can't run the app, you might have to give it the proper permissions by writing `chmod +x twitch-stream` at the folder where you downloaded the executable.
 
+### Why should I use `twitch-stream` and not `livestreamer`?
+
+That's a great question. The truth is, you don't need to change Livestreamer. If you want to, here's a good suggestion: `livestreamer` is not an app per se, but instead, a Python command line executable. In order to run `livestreamer` you need to have their dependencies installed. They have an installer with no dependencies, but you can clearly see that the installer has a bunch of files just to run Python alone, plus several other required files as well.
+
+Another thing that could be important for you is that `livestreamer` is only available for 32-bits. If you have Windows 64 bits, then you'll install a 32-bit version. `twitch-stream` is available in both 32 and 64 bits versions from the installer itself —at the moment of the installation, the process will pick the one depending on your architecture—.
+
+Finally, if you have Mac OS X or Linux, you'll see that [there are quite a good number of requirements](http://docs.livestreamer.io/install.html#dependencies), all automatically installed by the installer, and the installation is done through `pip`, one of the Python Package managers out there. `twitch-stream` only has ONE file and one file alone: the executable. You don't need anything else, you don't need Go installed or not even Python. No dependencies at all!
+
 ### Adding the app to the Operating System Path
 
 If you want to run the app without prepending the full folder path before, then you need to add the app to your **path** set up on your computer. The **path** its just a list of folders where, if an executable is found, then doesn't need to be called with the full path on it, instead, you can just use the executable name (in our case, `twitch-stream`).
