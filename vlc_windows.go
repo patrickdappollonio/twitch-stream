@@ -8,11 +8,11 @@ var (
 func getVLCPath() (string, error) {
 	var path string
 
-	if fileExists(vlc_path_32) {
+	if exists(vlc_path_32) {
 		path = vlc_path_32
 	}
 
-	if fileExists(vlc_path_64) {
+	if exists(vlc_path_64) {
 		path = vlc_path_64
 	}
 
