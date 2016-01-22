@@ -195,7 +195,7 @@ func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 	var streamlist []StreamDetails
 
 	// Iterate over the streams and append them to the list
-	for pos, _ := range availableStreams {
+	for pos := range availableStreams {
 		// Parse the given link as a whole URL
 		streamlink, err := url.Parse(availableStreams[pos])
 
