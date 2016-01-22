@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/patrickdappollonio/twitch-stream/twitch"
 
@@ -73,6 +74,12 @@ func main() {
 	if err != nil {
 		logger.Println(err.Error())
 		errorAndExit(fmt.Sprintf("unable to connect to the stream at twitch.tv/%s, try again?", channel))
+		return
+	}
+
+	// Check if no token is coming, if so, it's likely that the username was wrong
+	if strings.TrimSpace(token) == "" {
+		errorAndExit(fmt.Sprintf(`no credentials received, check the streamer name at http://www.twitch.tv/%s and try again.`, channel))
 		return
 	}
 
