@@ -1,259 +1,149 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"net/http"
-	"net/url"
+	"log"
 	"os"
-	"regexp"
-	"strings"
+	"os/exec"
 
-	"launchpad.net/gnuflag"
-)
+	"github.com/patrickdappollonio/twitch-stream/twitch"
 
-const (
-	AccessTokenURL = "http://api.twitch.tv/api/channels/%s/access_token"
-	M3U8StreamURL  = "http://usher.twitch.tv/api/channel/hls/%s.m3u8?player=twitchweb&token=%s&sig=%s&$allow_audio_only=true&allow_source=true&type=any&p=%d"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	ErrCantRetrieveAccessToken  = fmt.Errorf("Can't sign up into Twitch servers")
-	ErrCantReadM3U8Contents     = fmt.Errorf("Can't retrieve available streams, are you sure the user is still streaming?")
-	ErrNoStreamURLFound         = fmt.Errorf("No stream URL found")
-	ErrCantRetrieveStreamURLs   = fmt.Errorf("Can't retrieve stream URLs")
-	ErrNoStreamAvailableQuality = fmt.Errorf("No streams available for selected quality")
-	ErrCantFindStreams          = fmt.Errorf("We couldn't find any stream for the given user")
-	ErrForgotParameters         = fmt.Errorf("Please, send both the Twitch username and the desired quality")
+	// Declare the global app
+	app = kingpin.New("twitch-stream", APP_DESCRIPTION)
 
-	regexQualityMatch = regexp.MustCompile("VIDEO=\".*\"")
-	qualities         = []string{"best", "high", "medium", "low", "mobile"}
-
-	strStarting           = "[INFO] Acquiring %s stream data from Twitch Servers\n"
-	strOpeningVLC         = "[INFO] Opening %s stream in VLC\n"
-	strNoSelectedQuality  = "[INFO] No streams available at %s quality, choosing the best one instead\n"
-	strStreamURL          = "[URL] %s\n"
-	strBadQualitySelected = "[ERROR] bad quality selected\n\n%s"
-	strMissingArgs        = "missing arguments\n\n%s"
+	// Flags and arguments
+	argStreamer = app.Arg(options["streamer"].Name, options["streamer"].Value).Required().String()
+	argQuality  = app.Arg(options["quality"].Name, options["quality"].Value).Default("best").String()
+	argShowURL  = app.Flag(options["showurl"].Name, options["showurl"].Value).Short(options["showurl"].Short).Bool()
+	argDebug    = app.Flag(options["debug"].Name, options["debug"].Value).Short(options["debug"].Short).Bool()
 )
 
-var help = `twitch-stream - retrieve and play Twitch stream URLs!
-
-USAGE:
-	twitch-stream [username] [quality] [global options]
-	twitch-stream --help
-
-EXAMPLE:
-	twitch-stream patrickdappollonio best
-	twitch-stream patrickdappollonio best --vlc
-
-VERSION:
-	1.0.0
-
-AVAILABLE QUALITIES:
-	best	Original quality used by Twitch (default)
-	high
-	medium
-	low
-	mobile
-
-GLOBAL OPTIONS
-	--vlc	Open the acquired stream in VLC
-	--help	Shows this information
-`
-
-type accesstoken struct {
-	Token     string `json:"token"`
-	Signature string `json:"sig"`
-}
-
-type Stream struct {
-	Quality string
-	URL     url.URL
-}
-
 func main() {
+	// Parse all values
+	kingpin.MustParse(app.Parse(os.Args[1:]))
+
+	// Placeholders
+	var channel, quality string
+	var showURL bool
+
+	// Enable or disable debug information
+	var buf bytes.Buffer
+	logger := log.New(&buf, "[debug] -- ", 0)
+	logger.SetOutput(os.Stdout)
+
+	// If no debug, then discard
+	if !(*argDebug) {
+		logger.SetFlags(0)
+		logger.SetOutput(ioutil.Discard)
+	}
+
+	// Create a placeholder (to prevent variable shadowing)
 	var (
-		shouldShowHelp bool
-		shouldOpenVLC  bool
+		wasFound     bool
+		whichQuality Key
 	)
-	gnuflag.BoolVar(&shouldShowHelp, "help", false, "Should show the Help")
-	gnuflag.BoolVar(&shouldOpenVLC, "vlc", false, "Should open the stream in VLC Media Player")
-	gnuflag.Parse(true)
 
-	if shouldShowHelp {
-		fmt.Println(help)
-		os.Exit(0)
+	// Retrieve the quality from the available ones
+	whichQuality, wasFound = qualities[*argQuality]
+
+	// Check if the quality exists in the available list
+	if !wasFound {
+		errorAndExit(fmt.Sprintf("no such quality available: %s", *argQuality))
 		return
 	}
 
-	if err := validateNumberOfArguments(os.Args); err != nil {
-		errAndExit(err)
-		return
-	}
+	// Set variables to placeholders
+	channel = fmt.Sprintf("%s", *argStreamer)
+	quality = whichQuality.Value
+	showURL = *argShowURL
 
-	twchannel := strings.ToLower(os.Args[1])
-	quality := strings.ToLower(os.Args[2])
+	// Print information to console
+	fmt.Printf(LOG_TAG, fmt.Sprintf("acquiring credentials to watch twitch.tv/%s", channel))
 
-	if err := validateQuality(quality); err != nil {
-		errAndExit(err)
-		return
-	}
+	// Try retrieving access details to request later the stream URL
+	token, signature, err := twitch.GetTokenAndSignature(channel)
 
-	fmt.Fprintf(os.Stdout, strStarting, twchannel)
-
-	token, signature, err := getTokenSignature(twchannel)
+	// If there was an error, print and return
 	if err != nil {
-		errAndExit(ErrCantRetrieveAccessToken)
+		logger.Println(err.Error())
+		errorAndExit(fmt.Sprintf("unable to connect to the stream at twitch.tv/%s, try again?", channel))
 		return
 	}
 
-	streamurl, err := getStreamResponse(twchannel, token, signature)
+	// Printing information message
+	fmt.Printf(LOG_TAG, fmt.Sprintf("credentials acquired, retrieving stream URL at %s quality", quality))
+
+	// Retrieve the m3u8 url from Twitch undocumented API
+	// with a given quality or best
+	stream, err := twitch.GetStreamWithQualityOrBest(channel, token, signature, quality)
+
+	// If there was an error, print and return
 	if err != nil {
-		errAndExit(ErrCantReadM3U8Contents)
-		return
-	}
+		logger.Println(err.Error())
 
-	strurl, err := selectStreamQualityOrBest(streamurl, quality)
-	if err != nil && err != ErrNoStreamAvailableQuality {
-		errAndExit(ErrCantFindStreams)
-		return
-	}
-
-	if shouldOpenVLC {
-		fmt.Fprintf(os.Stdout, strOpeningVLC, twchannel)
-
-		if err := openInVLC(strurl); err != nil {
-			errAndExit(err)
+		if err == twitch.ErrNoStreamsFoundForUser {
+			errorAndExit(fmt.Sprintf(`couldn't find any stream for twitch.tv/%s, is the channel live?`, channel))
 			return
 		}
 
+		errorAndExit(fmt.Sprintf(`unable to retrieve stream for twitch.tv/%s at "%s" quality`, channel, quality))
+		return
+	}
+
+	// Check if the stream we choose earlier was the one returned
+	if stream.Quality != quality {
+		fmt.Printf(LOG_TAG, fmt.Sprintf(`quality "%s" wasn't available, choosing "best"`, quality))
+	}
+
+	// If we had to show the URL, we show it and close the app
+	if showURL {
+		fmt.Printf(LOG_TAG, fmt.Sprintf(`url found for "%s" stream`, channel))
+		fmt.Println("URL:", stream.URL)
+		fmt.Println(THANKS_MSG)
 		os.Exit(0)
 		return
 	}
 
-	if err == ErrNoStreamAvailableQuality {
-		fmt.Fprintf(os.Stdout, strNoSelectedQuality, quality)
-	}
+	// Try finding the vlc executable
+	path, err := exec.LookPath(VLC_APP)
 
-	fmt.Fprintf(os.Stdout, strStreamURL, strurl.String())
-	os.Exit(0)
-}
-
-func errAndExit(err error) {
-	fmt.Fprintln(os.Stderr, "[ERROR]", err.Error())
-	os.Exit(1)
-	return
-}
-
-func validateQuality(quality string) error {
-	for _, q := range qualities {
-		if q == quality {
-			return nil
-		}
-	}
-
-	return fmt.Errorf(strBadQualitySelected, help)
-}
-
-func validateNumberOfArguments(args []string) error {
-	if len(os.Args) < 3 {
-		return fmt.Errorf(strMissingArgs, help)
-	}
-
-	return nil
-}
-
-func getTokenSignature(twchannel string) (string, string, error) {
-	tokenurl := fmt.Sprintf(AccessTokenURL, twchannel)
-	response, err := http.Get(tokenurl)
-
+	// If the app wasn't found, print a message
 	if err != nil {
-		return "", "", err
+		errorAndExit("vlc app wasn't found on your path!")
+		return
 	}
 
-	defer response.Body.Close()
+	// Inform we're opening vlc
+	fmt.Printf(LOG_TAG, fmt.Sprintf(`opening vlc app, please wait until "%s" stream starts playing...`, channel))
 
-	var res accesstoken
-	err = json.NewDecoder(response.Body).Decode(&res)
-	if err != nil {
-		return "", "", err
+	// Try executing the app
+	cmd := exec.Command(path, stream.URL.String())
+	if err := cmd.Start(); err != nil {
+		errorAndExit("impossible to execute vlc app!")
+		return
 	}
 
-	return res.Token, res.Signature, nil
+	// Showing exit message
+	fmt.Println(THANKS_MSG)
 }
 
-func getStreamResponse(twchannel, token, signature string) ([]Stream, error) {
-	m3u8url := fmt.Sprintf(M3U8StreamURL, twchannel, url.QueryEscape(token), signature, rand.Intn(1000))
-	var streams []Stream
-
-	response, err := http.Get(m3u8url)
-
-	if err != nil {
-		return streams, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode == 404 {
-		return streams, ErrNoStreamURLFound
-	}
-
-	if response.StatusCode != 200 {
-		return streams, ErrCantRetrieveStreamURLs
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return streams, err
-	}
-
-	content := string(body[:])
-
-	lines := strings.Split(content, "\n")
-	lines = lines[1:]
-
-	for i := 0; i < len(lines); i++ {
-		if strings.HasPrefix(lines[i], "#EXT-X-STREAM-INF:") && strings.HasPrefix(lines[i+1], "http") {
-			quality := regexQualityMatch.FindString(lines[i])
-			quality = strings.TrimPrefix(quality, `VIDEO="`)
-			quality = strings.TrimSuffix(quality, `"`)
-			streamurl, _ := url.Parse(lines[i+1])
-
-			streams = append(streams, Stream{
-				Quality: quality,
-				URL:     *streamurl,
-			})
-
-			i = i + 2
-		}
-	}
-
-	return streams, nil
+func errorAndExit(message string) {
+	// Error messages exit with status code != 0
+	printWithLog(1, ERROR_TAG, message)
 }
 
-func selectStreamQualityOrBest(streams []Stream, quality string) (url.URL, error) {
-	var selected *Stream
+func infoAndExit(message string) {
+	// Info messages exit with status code 0
+	printWithLog(0, LOG_TAG, message)
+}
 
-	if quality == "best" {
-		quality = "chunked"
-	}
-
-	for _, s := range streams {
-		if s.Quality == quality {
-			return s.URL, nil
-		}
-
-		if s.Quality == "chunked" {
-			selected = &s
-		}
-	}
-
-	if selected.Quality != quality {
-		return selected.URL, ErrNoStreamAvailableQuality
-	}
-
-	return selected.URL, nil
+func printWithLog(status int, tag, message string) {
+	fmt.Printf(tag, message)
+	os.Exit(status)
 }

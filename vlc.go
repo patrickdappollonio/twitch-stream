@@ -1,21 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"net/url"
-	"os/exec"
-)
+import "fmt"
 
-func openInVLC(stream url.URL) error {
-	path, ok := isVLCInstalled()
-
-	if !ok {
-		return fmt.Errorf("VideoLAN app not found at %s", path)
-	}
-
-	if err := exec.Command(path, stream.String()).Run(); err != nil {
-		return err
-	}
-
-	return nil
+func openStreamInVLC(streamURL string) {
+	fmt.Println("this should open vlc with url:", streamURL)
 }

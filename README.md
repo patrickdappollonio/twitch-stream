@@ -15,11 +15,7 @@ Open your command line app —on Windows, it's called "Command Prompt" while in 
 twitch-stream patrickdappollonio best
 ```
 
-That will show you the URL for the selected quality (or the best found if none match the requested quality) available for the user `patrickdappollonio`. Alternatively, you could also open the Stream in VLC (if you have it installed) by appending the `--vlc` parameter...
-
-```
-twitch-stream patrickdappollonio best --vlc
-```
+That will open the stream with the selected quality (or the best found if none match the requested quality) available for the user `patrickdappollonio` in the VLC app.
 
 If you're using Macintosh and you can't run the app, you might have to give it the proper permissions by writing `chmod +x twitch-stream` at the folder where you downloaded the executable.
 
@@ -27,7 +23,7 @@ If you're using Macintosh and you can't run the app, you might have to give it t
 
 If you want to run the app without prepending the full folder path before, then you need to add the app to your **path** set up on your computer. The **path** its just a list of folders where, if an executable is found, then doesn't need to be called with the full path on it, instead, you can just use the executable name (in our case, `twitch-stream`).
 
-**On Windows**, that's an easy task: you could copy your application to `C:\Windows\` or `C:\Windows\System32` and you're good to go. That will make the app globally available and instead of using the full path trick described on [Usage](#usage), you can just call it without the drag-and-drop part and just run `twitch-stream 
+**On Windows**, that's an easy task: you could copy your application to `C:\Windows\` or `C:\Windows\System32` and you're good to go. That will make the app globally available and instead of using the full path trick described on [Usage](#usage), you can just call it without the drag-and-drop part and just run `twitch-stream
 
 **On Macintosh**, you probably already figured that out. But if you don't, simply copy the executable to `/usr/local/bin`, by writing `cp twitch-stream /usr/local/bin`. Then simply execute the app without the drag-and-drop step described on [Usage](#usage).
 
