@@ -26,6 +26,9 @@ var (
 )
 
 func main() {
+	// Set app version
+	app.Version("2.0.0")
+
 	// Parse all values
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
