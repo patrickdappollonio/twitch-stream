@@ -31,11 +31,12 @@ var (
 		"medium": Key{Name: "medium", Value: "medium"},
 		"low":    Key{Name: "low", Value: "low"},
 		"mobile": Key{Name: "mobile", Value: "mobile"},
+		"audio":  Key{Name: "audio", Value: "audio only"},
 	}
 
 	options = map[string]Key{
 		"streamer": Key{Name: "streamer", Value: "The twitch username of the stream you want to watch."},
-		"quality":  Key{Name: "quality", Value: `The quality of the stream you want to see (available: "best" [known as "source" on Twitch], "high", "medium", "low", and "mobile").`},
+		"quality":  Key{Name: "quality", Value: `The quality of the stream you want to see. Available qualities are "best", "high", "medium", "low", "mobile" and "audio".`},
 		"showurl":  Key{Name: "url", Value: "If declared, it will print the stream URL to the console instead.", Short: 'u'},
 		"debug":    Key{Name: "debug", Value: "If declared, debug information will be printed to the console.", Short: 'd'},
 	}

@@ -5,10 +5,10 @@ package twitch
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/franela/goreq"
 )
@@ -16,11 +16,11 @@ import (
 const (
 	BEST_QUALITY         = "source"
 	ACCESS_TOKEN_URL     = "http://api.twitch.tv/api/channels/%s/access_token"
-	STREAM_GENERATOR_URL = "http://usher.twitch.tv/api/channel/hls/%s.m3u8?player=twitchweb&token=%s&sig=%s&$allow_audio_only=true&allow_source=true&type=any&p=%d"
+	STREAM_GENERATOR_URL = "http://usher.twitch.tv/api/channel/hls/%s.m3u8?player=twitchweb&token=%s&sig=%s&allow_audio_only=true&allow_source=true&type=any&allow_spectre=false&p=%d"
 )
 
 var (
-	reQualities  = regexp.MustCompile(`NAME=\"([a-zA-Z]+)\"`)
+	reQualities  = regexp.MustCompile(`NAME=\"([a-zA-Z_ ]+)\"`)
 	reStreamURLs = regexp.MustCompile(`http(|s):\/\/(.*)`)
 
 	ErrCantConnectToTwitch      = errors.New("can't connect to Twitch servers!")
@@ -153,7 +153,7 @@ func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 
 	// Perform the request with the given stream
 	res, err := goreq.Request{
-		Uri: fmt.Sprintf(STREAM_GENERATOR_URL, channel, url.QueryEscape(token), signature, rand.Intn(1000)),
+		Uri: fmt.Sprintf(STREAM_GENERATOR_URL, channel, url.QueryEscape(token), signature, time.Now().UnixNano()),
 	}.Do()
 
 	// Check if there was an error connecting
