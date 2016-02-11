@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "twitch-stream"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppPublisher "patrickdappollonio"
 #define MyAppURL "http://github.com/patrickdappollonio/twitch-stream"
 
@@ -40,8 +40,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 ; Install MyProg-x64.exe if running in 64-bit mode (x64; see above),
 ; MyProg.exe otherwise.
-Source: "C:\Users\Administrator\Desktop\twitch-stream_windows_amd64\twitch-stream.exe"; DestDir: "{app}"; DestName: "twitch-stream.exe"; Check: Is64BitInstallMode
-Source: "C:\Users\Administrator\Desktop\twitch-stream_windows_386\twitch-stream.exe"; DestDir: "{app}"; Check: not Is64BitInstallMode
+Source: "..\executables\twitch-stream_windows_amd64.exe"; DestDir: "{app}"; DestName: "twitch-stream.exe"; Check: Is64BitInstallMode
+Source: "..\executables\twitch-stream_windows_386.exe"; DestDir: "{app}"; Check: not Is64BitInstallMode
 
 [Icons]
 Name: "{group}\{cm:ProgramOnTheWeb,{#MyAppName}}"; Filename: "{#MyAppURL}"
