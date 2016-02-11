@@ -18,10 +18,11 @@ in the Github page at https://github.com/patrickdappollonio/twitch-stream/issues
 
 This application was created by Patrick D'appollonio, which is
 http://www.twitch.tv/patrickdappollonio on Twitch. Follow me!`
-	LOG_TAG    = "[info] -- %s \n"
-	ERROR_TAG  = "[error] -- %s \n"
-	VLC_APP    = "vlc"
-	THANKS_MSG = "—————— Thanks for using twitch-stream! ——————"
+	APP_VERSION = "2.0.1"
+	LOG_TAG     = "[info] -- %s \n"
+	ERROR_TAG   = "[error] -- %s \n"
+	VLC_APP     = "vlc"
+	THANKS_MSG  = "—————— Thanks for using twitch-stream! ——————"
 )
 
 var (
