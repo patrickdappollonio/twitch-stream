@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	TWITCH_CLIENT_ID     = "cy8f1qz0szzv7kr3hhlb9dhlxmr65od"
 	BEST_QUALITY         = "source"
 	ACCESS_TOKEN_URL     = "http://api.twitch.tv/api/channels/%s/access_token"
 	STREAM_GENERATOR_URL = "http://usher.twitch.tv/api/channel/hls/%s.m3u8?player=twitchweb&token=%s&sig=%s&allow_audio_only=true&allow_source=true&type=any&allow_spectre=false&p=%d"
@@ -22,6 +23,11 @@ const (
 var (
 	reQualities  = regexp.MustCompile(`NAME=\"([a-zA-Z_ ]+)\"`)
 	reStreamURLs = regexp.MustCompile(`http(|s):\/\/(.*)`)
+
+	ErrNoChannelSent   = errors.New("no channel name sent!")
+	ErrNoTokenSent     = errors.New("no token sent!")
+	ErrNoSignatureSent = errors.New("no signature sent!")
+	ErrNoQualitySent   = errors.New("no quality sent!")
 
 	ErrCantConnectToTwitch      = errors.New("can't connect to Twitch servers!")
 	ErrCantParseAuthResponse    = errors.New("can't parse auth response!")
@@ -41,13 +47,13 @@ type StreamDetails struct {
 func GetTokenAndSignature(channel string) (string, string, error) {
 	// Check if channel is coming
 	if strings.TrimSpace(channel) == "" {
-		panic("no channel name sent")
+		return "", "", ErrNoChannelSent
 	}
 
 	// Perform the request with the given stream
 	res, err := goreq.Request{
 		Uri: fmt.Sprintf(ACCESS_TOKEN_URL, channel),
-	}.Do()
+	}.WithHeader("Client-ID", TWITCH_CLIENT_ID).Do()
 
 	// Check if there was an error connecting
 	// to the twitch website
@@ -78,22 +84,22 @@ func GetTokenAndSignature(channel string) (string, string, error) {
 func GetStreamWithQualityOrBest(channel, token, signature, quality string) (StreamDetails, error) {
 	// Check that channel is not empty
 	if strings.TrimSpace(channel) == "" {
-		panic("no channel name sent")
+		return StreamDetails{}, ErrNoChannelSent
 	}
 
 	// Check that token is not empty
 	if strings.TrimSpace(token) == "" {
-		panic("no token sent")
+		return StreamDetails{}, ErrNoTokenSent
 	}
 
 	// Check that signature is not empty
 	if strings.TrimSpace(signature) == "" {
-		panic("no signature sent")
+		return StreamDetails{}, ErrNoSignatureSent
 	}
 
 	// Check that quality is not empty
 	if strings.TrimSpace(quality) == "" {
-		panic("no quality sent")
+		return StreamDetails{}, ErrNoQualitySent
 	}
 
 	// Get all streams
@@ -138,28 +144,28 @@ func GetStreamWithQualityOrBest(channel, token, signature, quality string) (Stre
 func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 	// Check that channel is not empty
 	if strings.TrimSpace(channel) == "" {
-		panic("no channel name sent")
+		return nil, ErrNoChannelSent
 	}
 
 	// Check that token is not empty
 	if strings.TrimSpace(token) == "" {
-		panic("no token sent")
+		return nil, ErrNoTokenSent
 	}
 
 	// Check that signature is not empty
 	if strings.TrimSpace(signature) == "" {
-		panic("no signature sent")
+		return nil, ErrNoSignatureSent
 	}
 
 	// Perform the request with the given stream
 	res, err := goreq.Request{
 		Uri: fmt.Sprintf(STREAM_GENERATOR_URL, channel, url.QueryEscape(token), signature, time.Now().UnixNano()),
-	}.Do()
+	}.WithHeader("Client-ID", TWITCH_CLIENT_ID).Do()
 
 	// Check if there was an error connecting
 	// to the twitch website
 	if err != nil {
-		return []StreamDetails{}, ErrCantConnectToTwitch
+		return nil, ErrCantConnectToTwitch
 	}
 
 	// Close response body once we're done here
@@ -171,7 +177,7 @@ func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 	// Check if there was an error trying to
 	// convert the body to string
 	if err != nil {
-		return []StreamDetails{}, ErrCantParseStreamsResponse
+		return nil, ErrCantParseStreamsResponse
 	}
 
 	// Find all qualities and urls in the page body
@@ -182,12 +188,12 @@ func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 
 	// Check if there are zero values, that means user is not streaming
 	if len(availableQualities) == 0 {
-		return []StreamDetails{}, ErrNoStreamsFoundForUser
+		return nil, ErrNoStreamsFoundForUser
 	}
 
 	// Check if we find the same amount of qualities and streams
 	if len(availableQualities) != len(availableStreams) {
-		return []StreamDetails{}, ErrStreamQuantitiesMismatch
+		return nil, ErrStreamQuantitiesMismatch
 	}
 
 	// Create placeholders
@@ -217,7 +223,7 @@ func GetAllStreams(channel, token, signature string) ([]StreamDetails, error) {
 
 	// Check if there was an error
 	if errorparsing != nil {
-		return []StreamDetails{}, errorparsing
+		return nil, errorparsing
 	}
 
 	// Return the remaining elements
